@@ -1,11 +1,17 @@
 import paho.mqtt.subscribe as subscribe
 import sqlite3
+from datetime import datetime
 
-conn = sqlite3.connect('smoker.db')
-c = conn.cursor()
+#time setup
+now = datetime.now()
+dt_string = now.strftime("%m/%d/%Y %H:%M:%S")
+
 
 topics = ['outTopic','smoker/temp','smoker/WiFi/#']
 
+#database setup
+conn = sqlite3.connect('smoker.db')
+c = conn.cursor()
 for topic in topics:
     c.execute('''CREATE TABLE '%s' 
               (date text, value text)''' % topic)
@@ -19,7 +25,7 @@ while True:
             print(f'{message.topic}:{tempC}° C')
             print(f'{message.topic}:{tempF}° F')
             #c.execute("INSERT INTO '%s' VALUES ('fakedate, '%s')" % (message.topic,str(tempF)))
-            c.execute("INSERT INTO 'smoker/temp' VALUES ('fakedate','fakemessage')")
+            c.execute(f"INSERT INTO '{message.topic}' VALUES ('{dt_string}','{tempF}')")
             conn.commit()
         else:
             print(f'{message.topic}:{message.payload}')
